@@ -2,7 +2,10 @@ import React, { useState, useCallback } from 'react';
 import { Plus, Trash2, Settings, Home, RotateCcw } from 'lucide-react';
 
 /* ======================================================
-   CUSTOM SCREEN (MOVED OUTSIDE APP — FIXES INPUT FOCUS)
+   CUSTOM SCREEN COMPONENT
+   - Manages food list (add/remove/favorite)
+   - Emoji picker with preset options
+   - Separated to fix input focus issues
 ====================================================== */
 
 const CustomScreen = ({
@@ -24,7 +27,7 @@ const CustomScreen = ({
   toggleRemovalSelection,
   removeSelectedFoods,
 }) => {
- // Common savory food emojis for quick selection
+  // Common savory food emojis for quick selection
   const emojiOptions = [
     '🍕', '🍔', '🌮', '🌯', '🍣', '🍝', '🍜', '🍱', 
     '🍲', '🥗', '🥪', '🍗', '🍖', '🥩', '🍤', '🦞',
@@ -36,6 +39,7 @@ const CustomScreen = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-500 p-6">
+      {/* Back to Home Button */}
       <button
         onClick={() => setCurrentScreen('home')}
         className="bg-white/20 backdrop-blur text-white rounded-full p-2 mb-6"
@@ -45,103 +49,15 @@ const CustomScreen = ({
 
       <h2 className="text-3xl font-bold text-white mb-6">Manage Foods</h2>
 
+      {/* Food List Display */}
       <div className="bg-white rounded-2xl p-6 shadow-xl mb-6">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">Add Custom Food</h3>
-        
-        <input
-          type="text"
-          placeholder="Food name"
-          value={customFoodName}
-          onChange={handleFoodNameChange}
-          className="w-full p-3 border-2 border-gray-300 rounded-lg mb-3"
-          autoComplete="off"
-        />
-        
-        <input
-          type="text"
-          placeholder="Category"
-          value={customFoodCategory}
-          onChange={handleCategoryChange}
-          className="w-full p-3 border-2 border-gray-300 rounded-lg mb-3"
-          autoComplete="off"
-        />
-
-        <div className="mb-3">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Choose an emoji:
-          </label>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="text-4xl bg-gray-100 rounded-lg p-3 border-2 border-gray-300">
-              {customFoodEmoji || '🍽️'}
-            </div>
-            <input
-              type="text"
-              placeholder="Or type emoji"
-              value={customFoodEmoji}
-              onChange={handleEmojiChange}
-              className="flex-1 p-3 border-2 border-gray-300 rounded-lg text-2xl"
-              autoComplete="off"
-              maxLength="2"
-            />
-          </div>
-          <div className="grid grid-cols-8 gap-2 max-h-48 overflow-y-auto p-2 bg-gray-50 rounded-lg border border-gray-200">
-            {emojiOptions.map((emoji, index) => (
-              <button
-                key={index}
-                onClick={() => handleEmojiChange({ target: { value: emoji } })}
-                className={`text-3xl p-2 rounded-lg hover:bg-gray-200 transition-colors ${
-                  customFoodEmoji === emoji ? 'bg-purple-200 ring-2 ring-purple-500' : 'bg-white'
-                }`}
-                type="button"
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <button
-          onClick={addCustomFood}
-          className="w-full bg-purple-600 text-white rounded-lg py-3 font-bold hover:bg-purple-700 transition-all flex items-center justify-center gap-2 mb-3"
-        >
-          <Plus size={20} />
-          Add Food
-        </button>
-        
-        {!removeMode ? (
-          <button
-            onClick={() => setRemoveMode(true)}
-            className="w-full bg-red-600 text-white rounded-lg py-3 font-bold hover:bg-red-700 transition-all flex items-center justify-center gap-2"
-          >
-            <Trash2 size={20} />
-            Remove Foods
-          </button>
-        ) : (
-          <div className="space-y-2">
-            <button
-              onClick={removeSelectedFoods}
-              disabled={selectedForRemoval.length === 0}
-              className="w-full bg-red-600 text-white rounded-lg py-3 font-bold hover:bg-red-700 transition-all flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              <Trash2 size={20} />
-              Remove Selected ({selectedForRemoval.length})
-            </button>
-            <button
-              onClick={() => { setRemoveMode(false); setSelectedForRemoval([]); }}
-              className="w-full bg-gray-600 text-white rounded-lg py-3 font-bold hover:bg-gray-700 transition-all"
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="bg-white rounded-2xl p-6 shadow-xl">
         <h3 className="text-xl font-bold text-gray-800 mb-4">
           Your Foods ({foodItems.length})
           {removeMode && <span className="text-red-600 text-sm ml-2">(Select to Remove)</span>}
         </h3>
-        <div className="space-y-2 max-h-96 overflow-y-auto">
+        
+        {/* Scrollable Food Items */}
+        <div className="space-y-2 max-h-96 overflow-y-auto mb-3">
           {foodItems.map(food => {
             const isFavorite = favorites.includes(food.id);
             const isSelectedForRemoval = selectedForRemoval.includes(food.id);
@@ -176,87 +92,206 @@ const CustomScreen = ({
             );
           })}
         </div>
+
+        {/* Remove Mode Toggle/Controls */}
+        {!removeMode ? (
+          <button
+            onClick={() => setRemoveMode(true)}
+            className="w-full bg-red-600 text-white rounded-lg py-3 font-bold hover:bg-red-700 transition-all flex items-center justify-center gap-2"
+          >
+            <Trash2 size={20} />
+            Remove Foods
+          </button>
+        ) : (
+          <div className="space-y-2">
+            <button
+              onClick={removeSelectedFoods}
+              disabled={selectedForRemoval.length === 0}
+              className="w-full bg-red-600 text-white rounded-lg py-3 font-bold hover:bg-red-700 transition-all flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              <Trash2 size={20} />
+              Remove Selected ({selectedForRemoval.length})
+            </button>
+            <button
+              onClick={() => { setRemoveMode(false); setSelectedForRemoval([]); }}
+              className="w-full bg-gray-600 text-white rounded-lg py-3 font-bold hover:bg-gray-700 transition-all"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Add Custom Food Section */}
+      <div className="bg-white rounded-2xl p-6 shadow-xl">
+        <h3 className="text-xl font-bold text-gray-800 mb-4">Add Custom Food</h3>
+        
+        {/* Food Name Input */}
+        <input
+          type="text"
+          placeholder="Food name"
+          value={customFoodName}
+          onChange={handleFoodNameChange}
+          className="w-full p-3 border-2 border-gray-300 rounded-lg mb-3"
+          autoComplete="off"
+        />
+        
+        {/* Category Input */}
+        <input
+          type="text"
+          placeholder="Category"
+          value={customFoodCategory}
+          onChange={handleCategoryChange}
+          className="w-full p-3 border-2 border-gray-300 rounded-lg mb-3"
+          autoComplete="off"
+        />
+
+        {/* Emoji Picker Section */}
+        <div className="mb-3">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Choose an emoji:
+          </label>
+          
+          {/* Emoji Display and Text Input */}
+          <div className="flex items-center gap-2 mb-2 w-full">
+            <div className="text-4xl bg-gray-100 rounded-lg p-3 border-2 border-gray-300 flex-shrink-0">
+              {customFoodEmoji || '🍽️'}
+            </div>
+            <input
+              type="text"
+              placeholder="Or type emoji"
+              value={customFoodEmoji}
+              onChange={handleEmojiChange}
+              className="flex-1 min-w-0 p-3 border-2 border-gray-300 rounded-lg text-2xl"
+              autoComplete="off"
+              maxLength="2"
+            />
+          </div>
+          
+          {/* Emoji Grid Selector */}
+          <div className="grid grid-cols-8 gap-2 max-h-48 overflow-y-auto p-2 bg-gray-50 rounded-lg border border-gray-200">
+            {emojiOptions.map((emoji, index) => (
+              <button
+                key={index}
+                onClick={() => handleEmojiChange({ target: { value: emoji } })}
+                className={`text-3xl p-2 rounded-lg hover:bg-gray-200 transition-colors ${
+                  customFoodEmoji === emoji ? 'bg-purple-200 ring-2 ring-purple-500' : 'bg-white'
+                }`}
+                type="button"
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Add Food Button */}
+        <button
+          onClick={addCustomFood}
+          className="w-full bg-purple-600 text-white rounded-lg py-3 font-bold hover:bg-purple-700 transition-all flex items-center justify-center gap-2"
+        >
+          <Plus size={20} />
+          Add Food
+        </button>
       </div>
     </div>
   );
 };
 
+/* ======================================================
+   MAIN APP COMPONENT
+====================================================== */
+
 const FoodQuestApp = () => {
+  // ==================== STATE MANAGEMENT ====================
+  
+  // Navigation & UI State
   const [currentScreen, setCurrentScreen] = useState('home');
   const [spinning, setSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [selectedResult, setSelectedResult] = useState(null);
+  
+  // Bracket Game State
   const [bracketRound, setBracketRound] = useState([]);
   const [bracketHistory, setBracketHistory] = useState([]);
   const [currentMatchup, setCurrentMatchup] = useState(0);
   
- const [foodItems, setFoodItems] = useState([
-  { id: 1, name: 'Pizza', category: 'Italian', emoji: '🍕' },
-  { id: 2, name: 'Burger', category: 'American', emoji: '🍔' },
-  { id: 3, name: 'Tacos', category: 'Mexican', emoji: '🌮' },
-  { id: 4, name: 'Burrito', category: 'Mexican', emoji: '🌯' },
-  { id: 5, name: 'Fried Chicken', category: 'American', emoji: '🍗' },
-  { id: 6, name: 'Chicken Wings', category: 'American', emoji: '🍗' },
-  { id: 7, name: 'Hot Dog', category: 'American', emoji: '🌭' },
-  { id: 8, name: 'Sandwich', category: 'American', emoji: '🥪' },
-  { id: 9, name: 'Grilled Cheese', category: 'American', emoji: '🧀' },
-  { id: 10, name: 'Mac & Cheese', category: 'American', emoji: '🧀' },
-  { id: 11, name: 'Pasta', category: 'Italian', emoji: '🍝' },
-  { id: 12, name: 'Lasagna', category: 'Italian', emoji: '🍝' },
-  { id: 13, name: 'Chicken Alfredo', category: 'Italian', emoji: '🍝' },
-  { id: 14, name: 'Steak', category: 'American', emoji: '🥩' },
-  { id: 15, name: 'BBQ Ribs', category: 'BBQ', emoji: '🍖' },
-  { id: 16, name: 'Pulled Pork', category: 'BBQ', emoji: '🍖' },
-  { id: 17, name: 'Meatloaf', category: 'American', emoji: '🍽️' },
-  { id: 18, name: 'Sloppy Joe', category: 'American', emoji: '🥪' },
-  { id: 19, name: 'Chili', category: 'Comfort', emoji: '🍲' },
-  { id: 20, name: 'Soup', category: 'Comfort', emoji: '🍲' },
-  { id: 21, name: 'Ramen', category: 'Japanese', emoji: '🍜' },
-  { id: 22, name: 'Sushi', category: 'Japanese', emoji: '🍣' },
-  { id: 23, name: 'Fried Rice', category: 'Chinese', emoji: '🍚' },
-  { id: 24, name: 'Orange Chicken', category: 'Chinese', emoji: '🍗' },
-  { id: 25, name: 'Lo Mein', category: 'Chinese', emoji: '🍜' },
-  { id: 26, name: 'General Tso’s Chicken', category: 'Chinese', emoji: '🍗' },
-  { id: 27, name: 'Pad Thai', category: 'Thai', emoji: '🍜' },
-  { id: 28, name: 'Chicken Curry', category: 'Indian', emoji: '🍛' },
-  { id: 29, name: 'Butter Chicken', category: 'Indian', emoji: '🍗' },
-  { id: 30, name: 'Chicken Tikka Masala', category: 'Indian', emoji: '🍛' },
-  { id: 31, name: 'Quesadilla', category: 'Mexican', emoji: '🧀' },
-  { id: 32, name: 'Nachos', category: 'Mexican', emoji: '🧀' },
-  { id: 33, name: 'Enchiladas', category: 'Mexican', emoji: '🌮' },
-  { id: 34, name: 'Fajitas', category: 'Mexican', emoji: '🌮' },
-  { id: 35, name: 'Tortilla Soup', category: 'Mexican', emoji: '🍲' },
-  { id: 36, name: 'Caesar Salad', category: 'Healthy', emoji: '🥗' },
-  { id: 37, name: 'Chicken Salad', category: 'Healthy', emoji: '🥗' },
-  { id: 38, name: 'Grilled Chicken', category: 'Healthy', emoji: '🍗' },
-  { id: 39, name: 'Salmon', category: 'Seafood', emoji: '🐟' },
-  { id: 40, name: 'Shrimp', category: 'Seafood', emoji: '🍤' },
-  { id: 41, name: 'Fish & Chips', category: 'Seafood', emoji: '🐟' },
-  { id: 42, name: 'Chicken Parmesan', category: 'Italian', emoji: '🍗' },
-  { id: 43, name: 'Philly Cheesesteak', category: 'American', emoji: '🥩' },
-  { id: 44, name: 'Breakfast Burrito', category: 'Breakfast', emoji: '🌯' },
-  { id: 45, name: 'Pancakes', category: 'Breakfast', emoji: '🥞' },
-  { id: 46, name: 'Omelet', category: 'Breakfast', emoji: '🍳' },
-  { id: 47, name: 'French Toast', category: 'Breakfast', emoji: '🍞' },
-  { id: 48, name: 'BLT Sandwich', category: 'American', emoji: '🥪' },
-  { id: 49, name: 'Chicken Nuggets', category: 'Fast Food', emoji: '🍗' },
-  { id: 50, name: 'Pepperoni Pizza', category: 'Italian', emoji: '🍕' }
-]);
+  // Food Items Data (Initial 50 foods)
+  const [foodItems, setFoodItems] = useState([
+    { id: 1, name: 'Pizza', category: 'Italian', emoji: '🍕' },
+    { id: 2, name: 'Burger', category: 'American', emoji: '🍔' },
+    { id: 3, name: 'Tacos', category: 'Mexican', emoji: '🌮' },
+    { id: 4, name: 'Burrito', category: 'Mexican', emoji: '🌯' },
+    { id: 5, name: 'Fried Chicken', category: 'American', emoji: '🍗' },
+    { id: 6, name: 'Chicken Wings', category: 'American', emoji: '🍗' },
+    { id: 7, name: 'Hot Dog', category: 'American', emoji: '🌭' },
+    { id: 8, name: 'Sandwich', category: 'American', emoji: '🥪' },
+    { id: 9, name: 'Grilled Cheese', category: 'American', emoji: '🧀' },
+    { id: 10, name: 'Mac & Cheese', category: 'American', emoji: '🧀' },
+    { id: 11, name: 'Pasta', category: 'Italian', emoji: '🍝' },
+    { id: 12, name: 'Lasagna', category: 'Italian', emoji: '🍝' },
+    { id: 13, name: 'Chicken Alfredo', category: 'Italian', emoji: '🍝' },
+    { id: 14, name: 'Steak', category: 'American', emoji: '🥩' },
+    { id: 15, name: 'BBQ Ribs', category: 'BBQ', emoji: '🍖' },
+    { id: 16, name: 'Pulled Pork', category: 'BBQ', emoji: '🍖' },
+    { id: 17, name: 'Meatloaf', category: 'American', emoji: '🍽️' },
+    { id: 18, name: 'Sloppy Joe', category: 'American', emoji: '🥪' },
+    { id: 19, name: 'Chili', category: 'Comfort', emoji: '🍲' },
+    { id: 20, name: 'Soup', category: 'Comfort', emoji: '🍲' },
+    { id: 21, name: 'Ramen', category: 'Japanese', emoji: '🍜' },
+    { id: 22, name: 'Sushi', category: 'Japanese', emoji: '🍣' },
+    { id: 23, name: 'Fried Rice', category: 'Chinese', emoji: '🍚' },
+    { id: 24, name: 'Orange Chicken', category: 'Chinese', emoji: '🍗' },
+    { id: 25, name: 'Lo Mein', category: 'Chinese', emoji: '🍜' },
+    { id: 26, name: 'General Tso\'s Chicken', category: 'Chinese', emoji: '🍗' },
+    { id: 27, name: 'Pad Thai', category: 'Thai', emoji: '🍜' },
+    { id: 28, name: 'Chicken Curry', category: 'Indian', emoji: '🍛' },
+    { id: 29, name: 'Butter Chicken', category: 'Indian', emoji: '🍗' },
+    { id: 30, name: 'Chicken Tikka Masala', category: 'Indian', emoji: '🍛' },
+    { id: 31, name: 'Quesadilla', category: 'Mexican', emoji: '🧀' },
+    { id: 32, name: 'Nachos', category: 'Mexican', emoji: '🧀' },
+    { id: 33, name: 'Enchiladas', category: 'Mexican', emoji: '🌮' },
+    { id: 34, name: 'Fajitas', category: 'Mexican', emoji: '🌮' },
+    { id: 35, name: 'Tortilla Soup', category: 'Mexican', emoji: '🍲' },
+    { id: 36, name: 'Caesar Salad', category: 'Healthy', emoji: '🥗' },
+    { id: 37, name: 'Chicken Salad', category: 'Healthy', emoji: '🥗' },
+    { id: 38, name: 'Grilled Chicken', category: 'Healthy', emoji: '🍗' },
+    { id: 39, name: 'Salmon', category: 'Seafood', emoji: '🐟' },
+    { id: 40, name: 'Shrimp', category: 'Seafood', emoji: '🍤' },
+    { id: 41, name: 'Fish & Chips', category: 'Seafood', emoji: '🐟' },
+    { id: 42, name: 'Chicken Parmesan', category: 'Italian', emoji: '🍗' },
+    { id: 43, name: 'Philly Cheesesteak', category: 'American', emoji: '🥩' },
+    { id: 44, name: 'Breakfast Burrito', category: 'Breakfast', emoji: '🌯' },
+    { id: 45, name: 'Pancakes', category: 'Breakfast', emoji: '🥞' },
+    { id: 46, name: 'Omelet', category: 'Breakfast', emoji: '🍳' },
+    { id: 47, name: 'French Toast', category: 'Breakfast', emoji: '🍞' },
+    { id: 48, name: 'BLT Sandwich', category: 'American', emoji: '🥪' },
+    { id: 49, name: 'Chicken Nuggets', category: 'Fast Food', emoji: '🍗' },
+    { id: 50, name: 'Pepperoni Pizza', category: 'Italian', emoji: '🍕' }
+  ]);
 
+  // User Preferences & Custom Food State
   const [favorites, setFavorites] = useState([]);
   const [customFoodName, setCustomFoodName] = useState('');
   const [customFoodCategory, setCustomFoodCategory] = useState('');
   const [customFoodEmoji, setCustomFoodEmoji] = useState('');
   const [useFavoritesOnly, setUseFavoritesOnly] = useState(false);
+  
+  // Wheel Game State
   const [wheelItems, setWheelItems] = useState([]);
+  
+  // Remove Mode State
   const [removeMode, setRemoveMode] = useState(false);
   const [selectedForRemoval, setSelectedForRemoval] = useState([]);
 
+  // ==================== WHEEL ANIMATION ====================
+  
   const spinWheel = () => {
     if (spinning) return;
     setSpinning(true);
     setSelectedResult(null);
     
+    // Random spin configuration
     const minSpins = 10;
     const maxSpins = 15;
     const spins = minSpins + Math.random() * (maxSpins - minSpins);
@@ -267,6 +302,7 @@ const FoodQuestApp = () => {
     const duration = 6000;
     const startRotation = rotation;
     
+    // Animation loop with easing
     const animate = () => {
       const currentTime = Date.now();
       const elapsed = currentTime - startTime;
@@ -279,6 +315,7 @@ const FoodQuestApp = () => {
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
+        // Calculate which segment was selected
         const segmentAngle = 360 / wheelItems.length;
         let normalizedRotation = currentRotation % 360;
         if (normalizedRotation < 0) normalizedRotation += 360;
@@ -293,6 +330,9 @@ const FoodQuestApp = () => {
     requestAnimationFrame(animate);
   };
 
+  // ==================== HELPER FUNCTIONS ====================
+  
+  // Get foods based on favorites filter
   const getAvailableFoods = () => {
     if (useFavoritesOnly) {
       return foodItems.filter(food => favorites.includes(food.id));
@@ -300,6 +340,9 @@ const FoodQuestApp = () => {
     return foodItems;
   };
 
+  // ==================== GAME INITIALIZATION ====================
+  
+  // Start wheel game with specified size
   const startWheel = (size) => {
     const availableFoods = getAvailableFoods();
     const shuffled = [...availableFoods].sort(() => Math.random() - 0.5).slice(0, Math.min(size, availableFoods.length));
@@ -308,6 +351,7 @@ const FoodQuestApp = () => {
     setCurrentScreen('wheel');
   };
 
+  // Start bracket tournament with specified size
   const startBracket = (size) => {
     const availableFoods = getAvailableFoods();
     const shuffled = [...availableFoods].sort(() => Math.random() - 0.5).slice(0, Math.min(size, availableFoods.length));
@@ -317,30 +361,42 @@ const FoodQuestApp = () => {
     setCurrentScreen('bracket');
   };
 
+  // ==================== BRACKET GAME LOGIC ====================
+  
+  // Handle bracket winner selection
   const selectWinner = (winner) => {
     const newHistory = [...bracketHistory, winner];
     setBracketHistory(newHistory);
 
     if (newHistory.length === bracketRound.length / 2) {
       if (newHistory.length === 1) {
+        // Tournament complete
         setSelectedResult(winner);
         setBracketRound([]);
       } else {
+        // Advance to next round
         setBracketRound(newHistory);
         setBracketHistory([]);
         setCurrentMatchup(0);
       }
     } else {
+      // Next matchup
       setCurrentMatchup(currentMatchup + 2);
     }
   };
 
+  // ==================== QUICK PICK ====================
+  
+  // Random food selection
   const quickPick = () => {
     const availableFoods = getAvailableFoods();
     const randomFood = availableFoods[Math.floor(Math.random() * availableFoods.length)];
     setSelectedResult(randomFood);
   };
 
+  // ==================== FOOD MANAGEMENT ====================
+  
+  // Add custom food item
   const addCustomFood = useCallback(() => {
     if (customFoodName.trim()) {
       const newFood = {
@@ -356,6 +412,7 @@ const FoodQuestApp = () => {
     }
   }, [customFoodName, customFoodCategory, customFoodEmoji]);
 
+  // Input handlers (memoized for performance)
   const handleFoodNameChange = useCallback((e) => {
     setCustomFoodName(e.target.value);
   }, []);
@@ -368,6 +425,7 @@ const FoodQuestApp = () => {
     setCustomFoodEmoji(e.target.value);
   }, []);
 
+  // Toggle favorite status
   const toggleFavorite = (id) => {
     if (favorites.includes(id)) {
       setFavorites(favorites.filter(fid => fid !== id));
@@ -376,6 +434,7 @@ const FoodQuestApp = () => {
     }
   };
 
+  // Remove selected foods
   const removeSelectedFoods = () => {
     setFoodItems(foodItems.filter(food => !selectedForRemoval.includes(food.id)));
     setFavorites(favorites.filter(fid => !selectedForRemoval.includes(fid)));
@@ -383,6 +442,7 @@ const FoodQuestApp = () => {
     setRemoveMode(false);
   };
 
+  // Toggle food selection for removal
   const toggleRemovalSelection = (id) => {
     if (selectedForRemoval.includes(id)) {
       setSelectedForRemoval(selectedForRemoval.filter(rid => rid !== id));
@@ -391,13 +451,18 @@ const FoodQuestApp = () => {
     }
   };
 
+  // ==================== SCREEN COMPONENTS ====================
+  
+  /* Home Screen - Main menu with game mode selection */
   const HomeScreen = () => (
     <div className="min-h-screen bg-gradient-to-br from-orange-400 via-pink-400 to-purple-500 p-6 flex flex-col items-center justify-center">
+      {/* App Title */}
       <div className="text-center mb-8">
         <h1 className="text-6xl font-bold text-white mb-4 drop-shadow-lg">🍽️ FoodQuest</h1>
         <p className="text-xl text-white/90">Let's decide what to eat!</p>
       </div>
 
+      {/* Favorites Toggle */}
       <div className="mb-8 w-full max-w-md">
         <button
           onClick={() => setUseFavoritesOnly(!useFavoritesOnly)}
@@ -415,6 +480,7 @@ const FoodQuestApp = () => {
         </button>
       </div>
 
+      {/* Game Mode Buttons */}
       <div className="space-y-4 w-full max-w-md">
         <button
           onClick={() => setCurrentScreen('wheelSize')}
@@ -454,6 +520,7 @@ const FoodQuestApp = () => {
     </div>
   );
 
+  /* Wheel Size Selection Screen */
   const WheelSizeScreen = () => {
     const availableFoods = getAvailableFoods();
     const foodCount = availableFoods.length;
@@ -477,6 +544,7 @@ const FoodQuestApp = () => {
             {useFavoritesOnly ? `You have ${foodCount} favorite${foodCount !== 1 ? 's' : ''}` : 'How many foods on the wheel?'}
           </p>
           
+          {/* Check if user has enough foods */}
           {availableOptions.length === 0 ? (
             <div className="bg-white/20 backdrop-blur rounded-2xl p-8 text-center max-w-md">
               <p className="text-white text-lg mb-4">You need at least 4 favorites to play the wheel!</p>
@@ -500,6 +568,7 @@ const FoodQuestApp = () => {
     );
   };
 
+  /* Wheel Spin Screen - Interactive spinning wheel */
   const WheelScreen = () => {
     const segmentAngle = 360 / wheelItems.length;
 
@@ -512,13 +581,16 @@ const FoodQuestApp = () => {
         <div className="flex-1 flex flex-col items-center justify-center">
           <h2 className="text-4xl font-bold text-white mb-8">Spin the Wheel!</h2>
 
+          {/* Wheel Container */}
           <div className="relative w-96 h-96 mb-8">
+            {/* Static Arrow Pointer */}
             <div className="absolute top-1/2 -translate-y-1/2 z-20" style={{ right: '-60px' }}>
               <svg width="50" height="70" viewBox="0 0 50 70" className="drop-shadow-2xl">
                 <path d="M 0 35 L 40 10 L 40 25 L 50 25 L 50 45 L 40 45 L 40 60 Z" fill="#DC2626" stroke="#991B1B" strokeWidth="2"/>
               </svg>
             </div>
 
+            {/* Winner Highlight Arrow */}
             {selectedResult && !spinning && (
               <div className="absolute top-1/2 -translate-y-1/2 z-30" style={{ right: '-60px' }}>
                 <svg width="55" height="80" viewBox="0 0 55 80" className="drop-shadow-2xl animate-pulse">
@@ -527,8 +599,10 @@ const FoodQuestApp = () => {
               </div>
             )}
 
+            {/* Spinning Wheel SVG */}
             <svg viewBox="0 0 400 400" className="w-full h-full drop-shadow-2xl" style={{ transform: `rotate(${rotation}deg)`, transformOrigin: 'center center', willChange: spinning ? 'transform' : 'auto' }}>
               {wheelItems.map((food, index) => {
+                // Calculate segment geometry
                 const startAngle = (index * segmentAngle - 90) * (Math.PI / 180);
                 const endAngle = ((index + 1) * segmentAngle - 90) * (Math.PI / 180);
                 const midAngle = (startAngle + endAngle) / 2;
@@ -538,10 +612,14 @@ const FoodQuestApp = () => {
                 const y2 = 200 + 200 * Math.sin(endAngle);
                 const largeArc = segmentAngle > 180 ? 1 : 0;
                 const pathData = `M 200 200 L ${x1} ${y1} A 200 200 0 ${largeArc} 1 ${x2} ${y2} Z`;
+                
+                // Text positioning
                 const textRadius = 130;
                 const textX = 200 + textRadius * Math.cos(midAngle);
                 const textY = 200 + textRadius * Math.sin(midAngle);
                 const textRotation = (index * segmentAngle + segmentAngle / 2);
+                
+                // Color palette
                 const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B739', '#52B788', '#E76F51', '#2A9D8F'];
                 const color = colors[index % colors.length];
 
@@ -555,11 +633,14 @@ const FoodQuestApp = () => {
                   </g>
                 );
               })}
+              
+              {/* Center Circle */}
               <circle cx="200" cy="200" r="35" fill="white" stroke="#333" strokeWidth="3" />
               <text x="200" y="200" textAnchor="middle" dy="12" fontSize="30">🍴</text>
             </svg>
           </div>
 
+          {/* Winner Display */}
           {selectedResult && !spinning && (
             <div className="bg-white rounded-2xl p-6 shadow-xl text-center mb-4 animate-bounce">
               <div className="bg-yellow-400 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg mb-3 inline-block">⭐ WINNER! ⭐</div>
@@ -569,6 +650,7 @@ const FoodQuestApp = () => {
             </div>
           )}
 
+          {/* Spin Button */}
           <button onClick={spinWheel} disabled={spinning} className={`${spinning ? 'bg-gray-400' : 'bg-gradient-to-r from-yellow-400 to-orange-500'} text-white rounded-full px-12 py-4 text-xl font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all disabled:transform-none`}>
             {spinning ? 'Spinning...' : 'SPIN!'}
           </button>
@@ -577,6 +659,7 @@ const FoodQuestApp = () => {
     );
   };
 
+  /* Bracket Size Selection Screen */
   const BracketSizeScreen = () => {
     const availableFoods = getAvailableFoods();
     const foodCount = availableFoods.length;
@@ -591,9 +674,12 @@ const FoodQuestApp = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-400 via-blue-400 to-purple-500 p-6 flex flex-col">
         <button onClick={() => setCurrentScreen('home')} className="self-start bg-white/20 backdrop-blur text-white rounded-full p-2 mb-4"><Home size={24} /></button>
+        
         <div className="flex-1 flex flex-col items-center justify-center">
           <h2 className="text-4xl font-bold text-white mb-4 text-center">Choose Bracket Size</h2>
           <p className="text-white/90 mb-8 text-center text-lg">{useFavoritesOnly ? `You have ${foodCount} favorite${foodCount !== 1 ? 's' : ''}` : 'How many foods do you want to compete?'}</p>
+          
+          {/* Check if user has enough foods */}
           {availableOptions.length === 0 ? (
             <div className="bg-white/20 backdrop-blur rounded-2xl p-8 text-center max-w-md">
               <p className="text-white text-lg mb-4">You need at least 4 favorites to play the bracket!</p>
@@ -616,7 +702,9 @@ const FoodQuestApp = () => {
     );
   };
 
+  /* Bracket Tournament Screen - Head-to-head matchups */
   const BracketScreen = () => {
+    // Tournament complete - show winner
     if (selectedResult && bracketRound.length === 0) {
       return (
         <div className="min-h-screen bg-gradient-to-br from-green-400 via-blue-400 to-purple-500 p-6 flex flex-col items-center justify-center">
@@ -633,9 +721,11 @@ const FoodQuestApp = () => {
       );
     }
 
+    // Get current matchup
     const matchup1 = bracketRound[currentMatchup];
     const matchup2 = bracketRound[currentMatchup + 1];
 
+    // Error state
     if (!matchup1 || !matchup2) {
       return (
         <div className="min-h-screen bg-gradient-to-br from-green-400 via-blue-400 to-purple-500 p-6 flex flex-col items-center justify-center">
@@ -644,13 +734,18 @@ const FoodQuestApp = () => {
       );
     }
 
+    // Active matchup display
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-400 via-blue-400 to-purple-500 p-6 flex flex-col">
         <button onClick={() => { setCurrentScreen('home'); setBracketRound([]); setSelectedResult(null); }} className="self-start bg-white/20 backdrop-blur text-white rounded-full p-2 mb-4"><Home size={24} /></button>
+        
         <div className="flex-1 flex flex-col items-center justify-center">
+          {/* Tournament Progress Info */}
           <h2 className="text-3xl font-bold text-white mb-2">Food Tournament</h2>
           <p className="text-white/90 mb-2">Round of {bracketRound.length}</p>
           <p className="text-white/80 text-sm mb-8">Matchup {bracketHistory.length + 1} of {bracketRound.length / 2}</p>
+          
+          {/* Head-to-head Choices */}
           <div className="grid grid-cols-2 gap-6 w-full max-w-2xl">
             <button onClick={() => selectWinner(matchup1)} className="bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all">
               <div className="text-6xl mb-4">{matchup1.emoji}</div>
@@ -663,17 +758,22 @@ const FoodQuestApp = () => {
               <p className="text-gray-600">{matchup2.category}</p>
             </button>
           </div>
+          
           <p className="text-white/90 mt-8 text-lg">Choose your favorite! 👆</p>
         </div>
       </div>
     );
   };
 
+  /* Quick Pick / Mystery Meal Screen - Random instant selection */
   const QuickPickScreen = () => (
     <div className="min-h-screen bg-gradient-to-br from-yellow-400 via-orange-400 to-red-500 p-6 flex flex-col relative overflow-hidden">
       <button onClick={() => { setCurrentScreen('home'); setSelectedResult(null); }} className="self-start bg-white/20 backdrop-blur text-white rounded-full p-2 mb-4 z-10"><Home size={24} /></button>
+      
+      {/* Before Selection - Mystery State */}
       {!selectedResult ? (
         <div className="flex-1 flex flex-col items-center justify-center relative">
+          {/* Animated Question Marks Background */}
           <div className="absolute inset-0 pointer-events-none">
             {[...Array(30)].map((_, i) => {
               const size = Math.random() * 60 + 40;
@@ -684,6 +784,8 @@ const FoodQuestApp = () => {
               return (<div key={i} className="absolute text-white font-bold" style={{ fontSize: `${size}px`, transform: `rotate(${rotation}deg)`, top: `${top}%`, left: `${left}%`, opacity }}>?</div>);
             })}
           </div>
+          
+          {/* Call to Action */}
           <div className="z-10 text-center">
             <h2 className="text-5xl font-bold text-white mb-8 drop-shadow-lg">Mystery Meal</h2>
             <p className="text-2xl text-white/90 mb-12 drop-shadow">What will you eat today?</p>
@@ -691,13 +793,16 @@ const FoodQuestApp = () => {
           </div>
         </div>
       ) : (
+        /* After Selection - Result Display */
         <div className="flex-1 flex flex-col items-center justify-center">
-          <h2 className="text-4xl font-bold text-white mb-12 drop-shadow-lg">✨ Your Mystery Meal! ✨</h2>
           <div className="bg-white rounded-3xl p-12 shadow-2xl text-center mb-8 animate-bounce">
+            <h2 className="text-3xl font-bold text-gray-800 mb-6">✨ Your Mystery Meal! ✨</h2>
             <div className="text-8xl mb-4">{selectedResult.emoji}</div>
             <h3 className="text-4xl font-bold text-gray-800 mb-2">{selectedResult.name}</h3>
             <p className="text-xl text-gray-600">{selectedResult.category}</p>
           </div>
+          
+          {/* Try Again Button */}
           <button onClick={() => setSelectedResult(null)} className="bg-white text-orange-600 rounded-full px-12 py-4 text-xl font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all flex items-center gap-3">
             <RotateCcw size={24} />Try Again
           </button>
@@ -706,6 +811,8 @@ const FoodQuestApp = () => {
     </div>
   );
 
+  // ==================== MAIN RENDER ====================
+  
   return (
     <div className="font-sans">
       {currentScreen === 'home' && <HomeScreen />}
